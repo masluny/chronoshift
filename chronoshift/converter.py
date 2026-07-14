@@ -90,3 +90,40 @@ def compute_offset_label(from_tz: str, to_tz: str) -> str:
         return f"{diff_hours:+.0f}h ahead".lstrip("+")
     else:
         return f"{abs(diff_hours):.0f}h behind"
+
+
+def format_diff(
+    source_time: time,
+    from_tz: str,
+    to_tz: str,
+    fmt: str = "24h",
+) -> str:
+    """Format a rich side-by-side diff between two time zones.
+
+    Returns a multi-line string like:
+        ┌─────────────────────────────────────┐
+        │  14:30  Europe/Warsaw               │
+        │  08:30  America/New_York  (6h behind)│
+        └─────────────────────────────────────┘
+    """
+    result = convert_time(source_time, from_tz, to_tz)
+    source_fmt = (
+        datetime.combine(datetime.now().date(), source_time).strftime("%H:%M")
+        if fmt == "24h"
+        else datetime.combine(datetime.now().date(), source_time)
+        .strftime("%I:%M %p")
+        .lstrip("0")
+    )
+    target_fmt = format_time(result, fmt)
+    offset = compute_offset_label(from_tz, to_tz)
+
+    line1 = f"  {source_fmt}  {from_tz}"
+    line2 = f"  {target_fmt}  {to_tz}  ({offset})"
+    width = max(len(line1), len(line2)) + 2
+
+    top = "┌" + "─" * width + "┐"
+    bot = "└" + "─" * width + "┘"
+    row1 = "│" + line1.ljust(width) + "│"
+    row2 = "│" + line2.ljust(width) + "│"
+
+    return f"{top}\n{row1}\n{row2}\n{bot}"
