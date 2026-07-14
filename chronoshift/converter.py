@@ -6,6 +6,20 @@ from datetime import datetime, time
 from zoneinfo import ZoneInfo, available_timezones
 
 
+def format_compact(source_time: time, from_tz: str, to_tz: str) -> str:
+    """One-line compact format: '14:30 WAR → 08:30 NYC (-6h)'.
+
+    Uses the last 3 characters of the city name as a short label.
+    """
+    result = convert_time(source_time, from_tz, to_tz)
+    from_label = from_tz.split("/")[-1][:3].upper()
+    to_label = to_tz.split("/")[-1][:3].upper()
+    src = datetime.combine(datetime.now().date(), source_time).strftime("%H:%M")
+    dst = result.strftime("%H:%M")
+    offset = compute_offset_label(from_tz, to_tz)
+    return f"{src} {from_label} → {dst} {to_label} ({offset})"
+
+
 def list_timezones() -> list[str]:
     """Return all available IANA time zone names, sorted."""
     return sorted(available_timezones())
