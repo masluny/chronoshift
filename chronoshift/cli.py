@@ -26,6 +26,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Time to convert (e.g. 14:30, 09:00:00, 2:30PM)",
     )
     parser.add_argument(
+        "--now",
+        action="store_true",
+        help="Use the current local time as input",
+    )
+    parser.add_argument(
         "--from",
         dest="from_tz",
         default="UTC",
@@ -65,6 +70,13 @@ def main(argv: list[str] | None = None) -> int:
         for tz in list_timezones():
             print(tz)
         return 0
+
+    if args.now:
+        from datetime import datetime
+        from zoneinfo import ZoneInfo
+
+        now = datetime.now(tz=ZoneInfo(args.from_tz))
+        args.time = now.strftime("%H:%M")
 
     if not args.time:
         parser.print_help()
