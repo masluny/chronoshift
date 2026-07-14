@@ -50,6 +50,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Output format (default: 24h)",
     )
     parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Output results as JSON (useful for scripting)",
+    )
+    parser.add_argument(
         "--list",
         action="store_true",
         help="List all available time zones",
@@ -92,15 +97,28 @@ def main(argv: list[str] | None = None) -> int:
         print(f"error: {exc}", file=sys.stderr)
         return 1
 
+    results = []
     for target_tz in args.to_tz:
         try:
             result = convert_time(source, args.from_tz, target_tz)
             formatted = format_time(result, args.fmt)
             offset = compute_offset_label(args.from_tz, target_tz)
-            print(f"{formatted} ({target_tz}) — {offset}")
+            results.append({
+                "time": formatted,
+                "zone": target_tz,
+                "offset": offset,
+                "iso": result.isoformat(),
+            })
         except KeyError:
             print(f"error: unknown time zone '{target_tz}'", file=sys.stderr)
             return 1
+
+    if args.json:
+        import json
+        print(json.dumps(results, indent=2))
+    else:
+        for r in results:
+            print(f"{r['time']} ({r['zone']}) — {r['offset']}")
 
     return 0
 
