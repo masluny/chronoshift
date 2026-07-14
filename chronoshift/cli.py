@@ -12,6 +12,7 @@ from chronoshift.converter import (
     format_time,
     list_timezones,
     parse_time,
+    suggest_timezone,
 )
 
 
@@ -110,7 +111,11 @@ def main(argv: list[str] | None = None) -> int:
                 "iso": result.isoformat(),
             })
         except KeyError:
-            print(f"error: unknown time zone '{target_tz}'", file=sys.stderr)
+            suggestions = suggest_timezone(target_tz)
+            msg = f"error: unknown time zone '{target_tz}'"
+            if suggestions:
+                msg += f" — did you mean: {', '.join(suggestions)}?"
+            print(msg, file=sys.stderr)
             return 1
 
     if args.json:

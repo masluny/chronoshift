@@ -68,6 +68,17 @@ def convert_time(
     return source_dt.astimezone(ZoneInfo(to_tz))
 
 
+def suggest_timezone(invalid_tz: str, limit: int = 3) -> list[str]:
+    """Suggest similar timezone names for a mistyped input.
+
+    Uses difflib for fuzzy matching against all IANA timezone names.
+    """
+    from difflib import get_close_matches
+
+    all_zones = list(available_timezones())
+    return get_close_matches(invalid_tz, all_zones, n=limit, cutoff=0.5)
+
+
 def format_time(dt: datetime, fmt: str = "24h") -> str:
     """Format a datetime for display.
 
