@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "chronoshift"
-version = "0.1.0"
+version = "0.2.0"
 description = "A fast CLI tool for converting times between time zones."
 readme = "README.md"
 license = {text = "MIT"}
