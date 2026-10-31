@@ -52,6 +52,14 @@ chronoshift 15:00 --from Asia/Tokyo --to America/New_York Europe/Berlin
 chronoshift --list
 ```
 
+### A specific day
+
+DST depends on the date. The default is today.
+
+```bash
+chronoshift 12:00 --from UTC --to America/New_York --date 2026-01-15
+```
+
 ### Use 24h format (default) or 12h
 
 ```bash
