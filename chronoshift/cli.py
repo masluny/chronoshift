@@ -46,6 +46,10 @@ def build_parser() -> argparse.ArgumentParser:
         help="Target time zone(s)",
     )
     parser.add_argument(
+        "--date",
+        help="Calendar day for the conversion, YYYY-MM-DD (default: today)",
+    )
+    parser.add_argument(
         "--format",
         dest="fmt",
         choices=["12h", "24h"],
@@ -99,10 +103,20 @@ def main(argv: list[str] | None = None) -> int:
         print(f"error: {exc}", file=sys.stderr)
         return 1
 
+    when = None
+    if args.date:
+        from datetime import datetime
+
+        try:
+            when = datetime.strptime(args.date, "%Y-%m-%d")
+        except ValueError:
+            print("error: --date must be YYYY-MM-DD", file=sys.stderr)
+            return 1
+
     results = []
     for target_tz in args.to_tz:
         try:
-            result = convert_time(source, args.from_tz, target_tz)
+            result = convert_time(source, args.from_tz, target_tz, date=when)
             formatted = format_time(result, args.fmt)
             offset = compute_offset_label(args.from_tz, target_tz)
             delta = calendar_day_delta(result.astimezone(ZoneInfo(args.from_tz)), result)
