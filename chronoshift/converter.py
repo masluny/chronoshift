@@ -107,14 +107,19 @@ def compute_offset_label(from_tz: str, to_tz: str) -> str:
         return ""
 
     diff_seconds = (to_offset - from_offset).total_seconds()
-    diff_hours = diff_seconds / 3600
-
-    if diff_hours == 0:
+    if diff_seconds == 0:
         return "same time"
-    elif diff_hours > 0:
-        return f"{diff_hours:+.0f}h ahead".lstrip("+")
+
+    total_minutes = int(round(abs(diff_seconds) / 60))
+    hours, minutes = divmod(total_minutes, 60)
+    if hours and minutes:
+        body = f"{hours}h {minutes}m"
+    elif hours:
+        body = f"{hours}h"
     else:
-        return f"{abs(diff_hours):.0f}h behind"
+        body = f"{minutes}m"
+    direction = "ahead" if diff_seconds > 0 else "behind"
+    return f"{body} {direction}"
 
 
 def format_diff(
