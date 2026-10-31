@@ -18,6 +18,14 @@ def test_marks_previous_calendar_day(capsys):
     assert "17:00 -1d" in out
 
 
+def test_now_uses_the_clock_in_the_source_zone(capsys):
+    code = main(["--now", "--from", "UTC", "--to", "UTC"])
+    assert code == 0
+    out = capsys.readouterr().out
+    assert "(UTC)" in out
+    assert "same time" in out
+
+
 def test_same_day_has_no_marker(capsys):
     code = main(["12:00", "--from", "UTC", "--to", "UTC"])
     assert code == 0

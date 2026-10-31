@@ -79,10 +79,10 @@ def main(argv: list[str] | None = None) -> int:
             print(tz)
         return 0
 
-        if args.now:
-            from datetime import datetime
+    if args.now:
+        from datetime import datetime
 
-            now = datetime.now(tz=ZoneInfo(args.from_tz))
+        now = datetime.now(tz=ZoneInfo(args.from_tz))
         args.time = now.strftime("%H:%M")
 
     if not args.time:
