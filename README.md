@@ -31,7 +31,10 @@ pip install -e .
 
 ```bash
 chronoshift 09:00 --from UTC --to Europe/London
+chronoshift 14:30 --from warsaw --to nyc
 ```
+
+City names such as `warsaw`, `london`, `tokyo`, `nyc`, and `sydney` map to their IANA zones. Full zone names are also case-insensitive.
 
 When the converted clock falls on another calendar day, the line says so:
 

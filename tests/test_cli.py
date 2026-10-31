@@ -18,6 +18,20 @@ def test_marks_previous_calendar_day(capsys):
     assert "17:00 -1d" in out
 
 
+def test_city_alias_and_lowercase_zone(capsys):
+    code = main(["14:30", "--from", "warsaw", "--to", "nyc", "--date", "2026-01-15"])
+    assert code == 0
+    out = capsys.readouterr().out
+    assert "America/New_York" in out
+    assert "08:30" in out
+
+
+def test_lowercase_iana_name(capsys):
+    code = main(["12:00", "--from", "utc", "--to", "europe/london", "--date", "2026-01-15"])
+    assert code == 0
+    assert "Europe/London" in capsys.readouterr().out
+
+
 def test_bad_source_zone_suggests_a_fix(capsys):
     code = main(["12:00", "--from", "Europe/Warsw", "--to", "UTC"])
     assert code == 1

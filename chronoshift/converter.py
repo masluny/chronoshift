@@ -17,6 +17,8 @@ def format_compact(
 
     The short label is the first three letters of the city name.
     """
+    from_tz = resolve_timezone(from_tz)
+    to_tz = resolve_timezone(to_tz)
     result = convert_time(source_time, from_tz, to_tz, date=date)
     from_label = from_tz.split("/")[-1][:3].upper()
     to_label = to_tz.split("/")[-1][:3].upper()
@@ -73,8 +75,55 @@ def convert_time(
     if date is None:
         date = datetime.now()
 
+    from_tz = resolve_timezone(from_tz)
+    to_tz = resolve_timezone(to_tz)
     source_dt = datetime.combine(date.date(), source_time, tzinfo=ZoneInfo(from_tz))
     return source_dt.astimezone(ZoneInfo(to_tz))
+
+
+_CITY_ALIASES = {
+    "warsaw": "Europe/Warsaw",
+    "waw": "Europe/Warsaw",
+    "london": "Europe/London",
+    "tokyo": "Asia/Tokyo",
+    "nyc": "America/New_York",
+    "new york": "America/New_York",
+    "la": "America/Los_Angeles",
+    "los angeles": "America/Los_Angeles",
+    "berlin": "Europe/Berlin",
+    "paris": "Europe/Paris",
+    "sydney": "Australia/Sydney",
+    "chicago": "America/Chicago",
+    "toronto": "America/Toronto",
+    "dubai": "Asia/Dubai",
+    "singapore": "Asia/Singapore",
+    "hong kong": "Asia/Hong_Kong",
+    "seoul": "Asia/Seoul",
+    "auckland": "Pacific/Auckland",
+}
+
+
+def resolve_timezone(name: str) -> str:
+    """Return the IANA name for a zone, a case-insensitive match, or a city alias.
+
+    Raises:
+        KeyError: If nothing matches.
+    """
+    cleaned = " ".join(name.strip().split())
+    folded = cleaned.casefold()
+    for zone in available_timezones():
+        if zone.casefold() == folded:
+            return zone
+
+    alias = _CITY_ALIASES.get(folded)
+    if alias is not None:
+        return alias
+
+    try:
+        ZoneInfo(cleaned)
+    except KeyError:
+        raise KeyError(name) from None
+    return cleaned
 
 
 def suggest_timezone(invalid_tz: str, limit: int = 3) -> list[str]:
@@ -116,6 +165,8 @@ def compute_offset_label(from_tz: str, to_tz: str) -> str:
 
     Uses the current moment to determine offset difference.
     """
+    from_tz = resolve_timezone(from_tz)
+    to_tz = resolve_timezone(to_tz)
     now = datetime.now(tz=ZoneInfo("UTC"))
     from_offset = now.astimezone(ZoneInfo(from_tz)).utcoffset()
     to_offset = now.astimezone(ZoneInfo(to_tz)).utcoffset()
@@ -154,6 +205,8 @@ def format_diff(
         │  08:30  America/New_York  (6h behind)│
         └─────────────────────────────────────┘
     """
+    from_tz = resolve_timezone(from_tz)
+    to_tz = resolve_timezone(to_tz)
     result = convert_time(source_time, from_tz, to_tz, date=date)
     source_fmt = format_time(datetime.combine(datetime.now().date(), source_time), fmt)
     delta = calendar_day_delta(result.astimezone(ZoneInfo(from_tz)), result)
