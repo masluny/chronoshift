@@ -6,16 +6,24 @@ from datetime import datetime, time
 from zoneinfo import ZoneInfo, available_timezones
 
 
-def format_compact(source_time: time, from_tz: str, to_tz: str) -> str:
-    """One-line compact format: '14:30 WAR → 08:30 NYC (-6h)'.
+def format_compact(
+    source_time: time,
+    from_tz: str,
+    to_tz: str,
+    fmt: str = "24h",
+    date: datetime | None = None,
+) -> str:
+    """One-line compact format: '14:30 WAR → 08:30 NEW (6h behind)'.
 
-    Uses the last 3 characters of the city name as a short label.
+    The short label is the first three letters of the city name.
     """
-    result = convert_time(source_time, from_tz, to_tz)
+    result = convert_time(source_time, from_tz, to_tz, date=date)
     from_label = from_tz.split("/")[-1][:3].upper()
     to_label = to_tz.split("/")[-1][:3].upper()
-    src = datetime.combine(datetime.now().date(), source_time).strftime("%H:%M")
-    dst = result.strftime("%H:%M")
+    src = format_time(datetime.combine(datetime.now().date(), source_time), fmt)
+    delta = calendar_day_delta(result.astimezone(ZoneInfo(from_tz)), result)
+    day = "" if delta == 0 else f" {delta:+d}d"
+    dst = format_time(result, fmt) + day
     offset = compute_offset_label(from_tz, to_tz)
     return f"{src} {from_label} → {dst} {to_label} ({offset})"
 
@@ -136,6 +144,7 @@ def format_diff(
     from_tz: str,
     to_tz: str,
     fmt: str = "24h",
+    date: datetime | None = None,
 ) -> str:
     """Format a rich side-by-side diff between two time zones.
 
@@ -145,15 +154,11 @@ def format_diff(
         │  08:30  America/New_York  (6h behind)│
         └─────────────────────────────────────┘
     """
-    result = convert_time(source_time, from_tz, to_tz)
-    source_fmt = (
-        datetime.combine(datetime.now().date(), source_time).strftime("%H:%M")
-        if fmt == "24h"
-        else datetime.combine(datetime.now().date(), source_time)
-        .strftime("%I:%M %p")
-        .lstrip("0")
-    )
-    target_fmt = format_time(result, fmt)
+    result = convert_time(source_time, from_tz, to_tz, date=date)
+    source_fmt = format_time(datetime.combine(datetime.now().date(), source_time), fmt)
+    delta = calendar_day_delta(result.astimezone(ZoneInfo(from_tz)), result)
+    day = "" if delta == 0 else f" {delta:+d}d"
+    target_fmt = format_time(result, fmt) + day
     offset = compute_offset_label(from_tz, to_tz)
 
     line1 = f"  {source_fmt}  {from_tz}"

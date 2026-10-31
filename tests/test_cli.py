@@ -18,6 +18,30 @@ def test_marks_previous_calendar_day(capsys):
     assert "17:00 -1d" in out
 
 
+def test_compact_line(capsys):
+    code = main([
+        "14:30", "--from", "Europe/Warsaw", "--to", "America/New_York",
+        "--date", "2026-01-15", "--compact",
+    ])
+    assert code == 0
+    out = capsys.readouterr().out
+    assert "14:30 WAR" in out
+    assert "08:30 NEW" in out
+    assert "behind" in out
+
+
+def test_diff_box(capsys):
+    code = main(["12:00", "--from", "UTC", "--to", "UTC", "--diff"])
+    assert code == 0
+    assert "┌" in capsys.readouterr().out
+
+
+def test_output_modes_are_exclusive(capsys):
+    code = main(["12:00", "--from", "UTC", "--to", "UTC", "--json", "--compact"])
+    assert code == 1
+    assert "only one" in capsys.readouterr().err
+
+
 def test_date_uses_standard_time_in_winter(capsys):
     code = main(["12:00", "--from", "UTC", "--to", "America/New_York", "--date", "2026-01-15"])
     assert code == 0
