@@ -31,9 +31,10 @@ def parse_time(time_str: str) -> time:
     Raises:
         ValueError: If the string can't be parsed as a valid time.
     """
-    for fmt in ("%H:%M:%S", "%H:%M", "%I:%M%p", "%I:%M %p"):
+    normalized = time_str.strip().upper()
+    for fmt in ("%H:%M:%S", "%H:%M", "%I:%M:%S%p", "%I:%M%p", "%I:%M:%S %p", "%I:%M %p"):
         try:
-            return datetime.strptime(time_str, fmt).time()
+            return datetime.strptime(normalized, fmt).time()
         except ValueError:
             continue
     raise ValueError(
