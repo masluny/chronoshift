@@ -4,9 +4,11 @@ from __future__ import annotations
 
 import argparse
 import sys
+from zoneinfo import ZoneInfo
 
 from chronoshift import __version__
 from chronoshift.converter import (
+    calendar_day_delta,
     compute_offset_label,
     convert_time,
     format_time,
@@ -77,11 +79,10 @@ def main(argv: list[str] | None = None) -> int:
             print(tz)
         return 0
 
-    if args.now:
-        from datetime import datetime
-        from zoneinfo import ZoneInfo
+        if args.now:
+            from datetime import datetime
 
-        now = datetime.now(tz=ZoneInfo(args.from_tz))
+            now = datetime.now(tz=ZoneInfo(args.from_tz))
         args.time = now.strftime("%H:%M")
 
     if not args.time:
@@ -104,11 +105,13 @@ def main(argv: list[str] | None = None) -> int:
             result = convert_time(source, args.from_tz, target_tz)
             formatted = format_time(result, args.fmt)
             offset = compute_offset_label(args.from_tz, target_tz)
+            delta = calendar_day_delta(result.astimezone(ZoneInfo(args.from_tz)), result)
             results.append({
                 "time": formatted,
                 "zone": target_tz,
                 "offset": offset,
                 "iso": result.isoformat(),
+                "day_delta": delta,
             })
         except KeyError:
             suggestions = suggest_timezone(target_tz)
@@ -123,7 +126,8 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps(results, indent=2))
     else:
         for r in results:
-            print(f"{r['time']} ({r['zone']}) — {r['offset']}")
+            day = "" if r["day_delta"] == 0 else f" {r['day_delta']:+d}d"
+            print(f"{r['time']}{day} ({r['zone']}) — {r['offset']}")
 
     return 0
 

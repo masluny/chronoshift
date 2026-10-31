@@ -1,10 +1,12 @@
 """Tests for chronoshift.converter."""
 
 from datetime import time
+from zoneinfo import ZoneInfo
 
 import pytest
 
 from chronoshift.converter import (
+    calendar_day_delta,
     compute_offset_label,
     convert_time,
     format_time,
@@ -83,6 +85,24 @@ class TestListTimezones:
         assert "UTC" in zones
         assert "Europe/Warsaw" in zones
         assert "US/Eastern" in zones
+
+
+class TestCalendarDayDelta:
+    def test_next_day(self):
+        result = convert_time(time(23, 0), "UTC", "Asia/Tokyo")
+        source = result.astimezone(ZoneInfo("UTC"))
+        assert calendar_day_delta(source, result) == 1
+        assert result.hour == 8
+
+    def test_previous_day(self):
+        result = convert_time(time(2, 0), "Asia/Tokyo", "UTC")
+        source = result.astimezone(ZoneInfo("Asia/Tokyo"))
+        assert calendar_day_delta(source, result) == -1
+        assert result.hour == 17
+
+    def test_same_day(self):
+        result = convert_time(time(12, 0), "UTC", "UTC")
+        assert calendar_day_delta(result, result) == 0
 
 
 class TestOffsetLabel:
