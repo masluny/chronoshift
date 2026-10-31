@@ -80,6 +80,14 @@ def suggest_timezone(invalid_tz: str, limit: int = 3) -> list[str]:
     return get_close_matches(invalid_tz, all_zones, n=limit, cutoff=0.5)
 
 
+def calendar_day_delta(source: datetime, result: datetime) -> int:
+    """How many calendar days the target clock sits from the source date.
+
+    +1 means the converted time is on the next day, -1 the previous day.
+    """
+    return (result.date() - source.date()).days
+
+
 def format_time(dt: datetime, fmt: str = "24h") -> str:
     """Format a datetime for display.
 

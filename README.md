@@ -33,6 +33,13 @@ pip install -e .
 chronoshift 09:00 --from UTC --to Europe/London
 ```
 
+When the converted clock falls on another calendar day, the line says so:
+
+```bash
+$ chronoshift 23:00 --from UTC --to Asia/Tokyo
+08:00 +1d (Asia/Tokyo) — 9h ahead
+```
+
 ### Multiple target zones
 
 ```bash
