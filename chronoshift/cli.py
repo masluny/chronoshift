@@ -86,6 +86,14 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _unknown_zone(name: str) -> str:
+    suggestions = suggest_timezone(name)
+    message = f"error: unknown time zone '{name}'"
+    if suggestions:
+        message += f" — did you mean: {', '.join(suggestions)}?"
+    return message
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
@@ -94,6 +102,12 @@ def main(argv: list[str] | None = None) -> int:
         for tz in list_timezones():
             print(tz)
         return 0
+
+    try:
+        ZoneInfo(args.from_tz)
+    except KeyError:
+        print(_unknown_zone(args.from_tz), file=sys.stderr)
+        return 1
 
     if args.now:
         from datetime import datetime
@@ -145,11 +159,7 @@ def main(argv: list[str] | None = None) -> int:
                 "day_delta": delta,
             })
         except KeyError:
-            suggestions = suggest_timezone(target_tz)
-            msg = f"error: unknown time zone '{target_tz}'"
-            if suggestions:
-                msg += f" — did you mean: {', '.join(suggestions)}?"
-            print(msg, file=sys.stderr)
+            print(_unknown_zone(target_tz), file=sys.stderr)
             return 1
 
     if args.json:

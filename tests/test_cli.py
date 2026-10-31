@@ -18,6 +18,22 @@ def test_marks_previous_calendar_day(capsys):
     assert "17:00 -1d" in out
 
 
+def test_bad_source_zone_suggests_a_fix(capsys):
+    code = main(["12:00", "--from", "Europe/Warsw", "--to", "UTC"])
+    assert code == 1
+    err = capsys.readouterr().err
+    assert "Europe/Warsw" in err
+    assert "Europe/Warsaw" in err
+
+
+def test_now_with_a_bad_zone_does_not_crash(capsys):
+    code = main(["--now", "--from", "Not/AZone", "--to", "UTC"])
+    assert code == 1
+    err = capsys.readouterr().err
+    assert "Not/AZone" in err
+    assert "Traceback" not in err
+
+
 def test_compact_line(capsys):
     code = main([
         "14:30", "--from", "Europe/Warsaw", "--to", "America/New_York",
