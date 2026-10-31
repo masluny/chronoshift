@@ -11,6 +11,8 @@ from chronoshift.converter import (
     calendar_day_delta,
     compute_offset_label,
     convert_time,
+    format_compact,
+    format_diff,
     format_time,
     list_timezones,
     parse_time,
@@ -60,6 +62,16 @@ def build_parser() -> argparse.ArgumentParser:
         "--json",
         action="store_true",
         help="Output results as JSON (useful for scripting)",
+    )
+    parser.add_argument(
+        "--compact",
+        action="store_true",
+        help="One line per zone, with a short city label",
+    )
+    parser.add_argument(
+        "--diff",
+        action="store_true",
+        help="Draw a box around the source and target times",
     )
     parser.add_argument(
         "--list",
@@ -113,6 +125,11 @@ def main(argv: list[str] | None = None) -> int:
             print("error: --date must be YYYY-MM-DD", file=sys.stderr)
             return 1
 
+    chosen = [name for name in ("json", "compact", "diff") if getattr(args, name)]
+    if len(chosen) > 1:
+        print("error: use only one of --json, --compact, --diff", file=sys.stderr)
+        return 1
+
     results = []
     for target_tz in args.to_tz:
         try:
@@ -138,6 +155,12 @@ def main(argv: list[str] | None = None) -> int:
     if args.json:
         import json
         print(json.dumps(results, indent=2))
+    elif args.compact:
+        for target_tz in args.to_tz:
+            print(format_compact(source, args.from_tz, target_tz, args.fmt, date=when))
+    elif args.diff:
+        for target_tz in args.to_tz:
+            print(format_diff(source, args.from_tz, target_tz, args.fmt, date=when))
     else:
         for r in results:
             day = "" if r["day_delta"] == 0 else f" {r['day_delta']:+d}d"

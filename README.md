@@ -40,6 +40,15 @@ $ chronoshift 23:00 --from UTC --to Asia/Tokyo
 08:00 +1d (Asia/Tokyo) — 9h ahead
 ```
 
+### Compact and boxed output
+
+```bash
+chronoshift 14:30 --from Europe/Warsaw --to America/New_York --compact
+chronoshift 14:30 --from Europe/Warsaw --to America/New_York --diff
+```
+
+`--json`, `--compact`, and `--diff` cannot be combined.
+
 ### Multiple target zones
 
 ```bash
