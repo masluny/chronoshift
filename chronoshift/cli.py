@@ -16,6 +16,7 @@ from chronoshift.converter import (
     format_time,
     list_timezones,
     parse_time,
+    resolve_timezone,
     suggest_timezone,
 )
 
@@ -103,10 +104,11 @@ def main(argv: list[str] | None = None) -> int:
             print(tz)
         return 0
 
+    raw_from = args.from_tz
     try:
-        ZoneInfo(args.from_tz)
+        args.from_tz = resolve_timezone(raw_from)
     except KeyError:
-        print(_unknown_zone(args.from_tz), file=sys.stderr)
+        print(_unknown_zone(raw_from), file=sys.stderr)
         return 1
 
     if args.now:
@@ -145,7 +147,14 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     results = []
-    for target_tz in args.to_tz:
+    resolved_targets = []
+    for raw_target in args.to_tz:
+        try:
+            target_tz = resolve_timezone(raw_target)
+        except KeyError:
+            print(_unknown_zone(raw_target), file=sys.stderr)
+            return 1
+        resolved_targets.append(target_tz)
         try:
             result = convert_time(source, args.from_tz, target_tz, date=when)
             formatted = format_time(result, args.fmt)
@@ -166,10 +175,10 @@ def main(argv: list[str] | None = None) -> int:
         import json
         print(json.dumps(results, indent=2))
     elif args.compact:
-        for target_tz in args.to_tz:
+        for target_tz in resolved_targets:
             print(format_compact(source, args.from_tz, target_tz, args.fmt, date=when))
     elif args.diff:
-        for target_tz in args.to_tz:
+        for target_tz in resolved_targets:
             print(format_diff(source, args.from_tz, target_tz, args.fmt, date=when))
     else:
         for r in results:
