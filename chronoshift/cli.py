@@ -76,8 +76,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--list",
-        action="store_true",
-        help="List all available time zones",
+        nargs="?",
+        const="",
+        default=None,
+        metavar="FILTER",
+        help="List time zones. Optionally keep names containing FILTER.",
     )
     parser.add_argument(
         "--version",
@@ -99,8 +102,13 @@ def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
 
-    if args.list:
-        for tz in list_timezones():
+    if args.list is not None:
+        needle = args.list.casefold()
+        matches = [tz for tz in list_timezones() if needle in tz.casefold()]
+        if needle and not matches:
+            print(f"error: no time zones match '{args.list}'", file=sys.stderr)
+            return 1
+        for tz in matches:
             print(tz)
         return 0
 
