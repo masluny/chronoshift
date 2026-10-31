@@ -30,6 +30,15 @@ class TestParseTime:
     def test_end_of_day(self):
         assert parse_time("23:59") == time(23, 59)
 
+    def test_12h_lowercase(self):
+        assert parse_time("2:30pm") == time(14, 30)
+
+    def test_12h_with_space_and_seconds(self):
+        assert parse_time("2:30:05 pm") == time(14, 30, 5)
+
+    def test_12h_midnight(self):
+        assert parse_time("12:00am") == time(0, 0)
+
 
 class TestConvertTime:
     def test_utc_to_eastern(self):
