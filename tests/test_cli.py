@@ -18,6 +18,27 @@ def test_marks_previous_calendar_day(capsys):
     assert "17:00 -1d" in out
 
 
+def test_list_without_a_filter_prints_zones(capsys):
+    code = main(["--list"])
+    assert code == 0
+    assert "Europe/Warsaw" in capsys.readouterr().out
+
+
+def test_list_filter_keeps_matching_zones(capsys):
+    code = main(["--list", "Warsaw"])
+    assert code == 0
+    lines = capsys.readouterr().out.splitlines()
+    assert "Europe/Warsaw" in lines
+    assert lines
+    assert all("warsaw" in line.casefold() for line in lines)
+
+
+def test_list_filter_miss_is_an_error(capsys):
+    code = main(["--list", "notazone"])
+    assert code == 1
+    assert "no time zones match" in capsys.readouterr().err
+
+
 def test_city_alias_and_lowercase_zone(capsys):
     code = main(["14:30", "--from", "warsaw", "--to", "nyc", "--date", "2026-01-15"])
     assert code == 0

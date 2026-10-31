@@ -62,6 +62,7 @@ chronoshift 15:00 --from Asia/Tokyo --to America/New_York Europe/Berlin
 
 ```bash
 chronoshift --list
+chronoshift --list Warsaw
 ```
 
 ### A specific day
