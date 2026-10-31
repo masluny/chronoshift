@@ -85,3 +85,12 @@ class TestOffsetLabel:
         label = compute_offset_label("UTC", "US/Eastern")
         assert isinstance(label, str)
         assert "h" in label
+
+    def test_half_hour_zone_keeps_minutes(self):
+        assert compute_offset_label("UTC", "Asia/Kolkata") == "5h 30m ahead"
+
+    def test_three_quarter_hour_zone_keeps_minutes(self):
+        assert compute_offset_label("UTC", "Asia/Kathmandu") == "5h 45m ahead"
+
+    def test_forty_five_minute_zone_keeps_minutes(self):
+        assert compute_offset_label("Australia/Eucla", "UTC") == "8h 45m behind"
