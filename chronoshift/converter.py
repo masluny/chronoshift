@@ -26,7 +26,7 @@ def format_compact(
     delta = calendar_day_delta(result.astimezone(ZoneInfo(from_tz)), result)
     day = "" if delta == 0 else f" {delta:+d}d"
     dst = format_time(result, fmt) + day
-    offset = compute_offset_label(from_tz, to_tz)
+    offset = compute_offset_label(from_tz, to_tz, moment=result)
     return f"{src} {from_label} → {dst} {to_label} ({offset})"
 
 
@@ -160,16 +160,24 @@ def format_time(dt: datetime, fmt: str = "24h") -> str:
     return dt.strftime("%H:%M")
 
 
-def compute_offset_label(from_tz: str, to_tz: str) -> str:
+def compute_offset_label(
+    from_tz: str,
+    to_tz: str,
+    moment: datetime | None = None,
+) -> str:
     """Compute a human-readable offset label like '6h behind' or '3h ahead'.
 
-    Uses the current moment to determine offset difference.
+    Uses `moment` when given, otherwise the current time. Pass the converted
+    instant so a `--date` in another season does not get today's offset.
     """
     from_tz = resolve_timezone(from_tz)
     to_tz = resolve_timezone(to_tz)
-    now = datetime.now(tz=ZoneInfo("UTC"))
-    from_offset = now.astimezone(ZoneInfo(from_tz)).utcoffset()
-    to_offset = now.astimezone(ZoneInfo(to_tz)).utcoffset()
+    if moment is None:
+        moment = datetime.now(tz=ZoneInfo("UTC"))
+    elif moment.tzinfo is None:
+        moment = moment.replace(tzinfo=ZoneInfo("UTC"))
+    from_offset = moment.astimezone(ZoneInfo(from_tz)).utcoffset()
+    to_offset = moment.astimezone(ZoneInfo(to_tz)).utcoffset()
 
     if from_offset is None or to_offset is None:
         return ""
@@ -212,7 +220,7 @@ def format_diff(
     delta = calendar_day_delta(result.astimezone(ZoneInfo(from_tz)), result)
     day = "" if delta == 0 else f" {delta:+d}d"
     target_fmt = format_time(result, fmt) + day
-    offset = compute_offset_label(from_tz, to_tz)
+    offset = compute_offset_label(from_tz, to_tz, moment=result)
 
     line1 = f"  {source_fmt}  {from_tz}"
     line2 = f"  {target_fmt}  {to_tz}  ({offset})"

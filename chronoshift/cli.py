@@ -166,7 +166,7 @@ def main(argv: list[str] | None = None) -> int:
         try:
             result = convert_time(source, args.from_tz, target_tz, date=when)
             formatted = format_time(result, args.fmt)
-            offset = compute_offset_label(args.from_tz, target_tz)
+            offset = compute_offset_label(args.from_tz, target_tz, moment=result)
             delta = calendar_day_delta(result.astimezone(ZoneInfo(args.from_tz)), result)
             results.append({
                 "time": formatted,

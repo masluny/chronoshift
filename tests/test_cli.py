@@ -99,6 +99,14 @@ def test_date_uses_standard_time_in_winter(capsys):
     assert "07:00" in capsys.readouterr().out
 
 
+def test_offset_follows_the_given_date(capsys):
+    code = main(["12:00", "--from", "UTC", "--to", "America/New_York", "--date", "2026-07-15"])
+    assert code == 0
+    out = capsys.readouterr().out
+    assert "08:00" in out
+    assert "4h behind" in out
+
+
 def test_date_uses_daylight_time_in_summer(capsys):
     code = main(["12:00", "--from", "UTC", "--to", "America/New_York", "--date", "2026-07-15"])
     assert code == 0
